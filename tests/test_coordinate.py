@@ -1,6 +1,7 @@
+from hapsolver.coordinate import Coordinate
+
 import pytest
 
-from hapsolver.coordinate import Coordinate
 
 class TestCoordinate:
     @pytest.mark.parametrize(
