@@ -33,6 +33,8 @@ class Coordinate:
         # initialize a genomic coordinate interval
         # used when a bed file is provided in the input to select the
         # genomic regions to consider when reconstructing haplotypes
+        if stop < start:
+            raise ValueError("Stop < start coordinate")
         self._contig = contig  # set contig name
         self._start = start  # set start coordinate
         self._stop = stop  # set stop coordinate

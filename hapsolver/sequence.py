@@ -1,5 +1,4 @@
-""" 
-"""
+""" """
 
 from coordinate import Coordinate
 from utils import DNA
@@ -36,7 +35,7 @@ class Sequence:
             ValueError: If the input sequence contains characters other than A,
             C, G, T, and N.
         """
-        if any(nt not in DNA for nt in set(sequence)):
+        if any(nt.upper() not in DNA for nt in set(sequence)):
             raise ValueError("The input string is not a DNA string")
         # force sequence nucleotides to upper case
         self._sequence = sequence.upper()
@@ -150,7 +149,30 @@ class SequenceIterator:
 
 
 class Fasta:
+    """Handles FASTA file operations.
+
+    Provides methods for interacting with FASTA files, including indexing, fetching
+    sequences, and managing associated data.
+
+    Attributes:
+        _fname (str): The path to the FASTA file.
+        _faidx (str): The path to the FASTA index file.
+        _fasta (pysam.FastaFile): The pysam FastaFile object.
+        _contigs (list): A list of contig names in the FASTA file.
+    """
+
     def __init__(self, fname: str, faidx: Optional[str] = "") -> None:
+        """Initialize a Fasta object.
+
+        Initializes a Fasta object to handle FASTA files, including index searching
+        and FastaFile object initialization.
+
+        Args:
+            fname: The path to the FASTA file.
+            faidx: An optional path to a FASTA index file.
+        """
+        if not os.path.isfile(fname):
+            raise FileNotFoundError(f"Cannot find input FASTA {fname}")
         self._fname = fname  # store input file name
         self._faidx = self._search_index(faidx)  # initialize fasta index
         # initialize FastaFile object with the previously computed index
