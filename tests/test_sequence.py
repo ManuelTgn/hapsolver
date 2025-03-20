@@ -22,7 +22,12 @@ ERROR_CASES = [
     ("123", ValueError),  # ID: invalid_numeric
 ]
 
-@pytest.mark.parametrize("sequence, expected_sequence, expected_len", TEST_CASES, ids=[case[2] for case in TEST_CASES])
+
+@pytest.mark.parametrize(
+    "sequence, expected_sequence, expected_len",
+    TEST_CASES,
+    ids=[case[2] for case in TEST_CASES],
+)
 def test_valid_sequence(sequence, expected_sequence, expected_len):
     # Act
     seq = Sequence(sequence)
@@ -35,18 +40,33 @@ def test_valid_sequence(sequence, expected_sequence, expected_len):
     for i in range(len(seq)):
         assert seq[i] == expected_sequence[i]
 
-@pytest.mark.parametrize("sequence, expected_exception", ERROR_CASES, ids=[case[1].__name__ for case in ERROR_CASES])
+
+@pytest.mark.parametrize(
+    "sequence, expected_exception",
+    ERROR_CASES,
+    ids=[case[1].__name__ for case in ERROR_CASES],
+)
 def test_invalid_sequence(sequence, expected_exception):
     # Act & Assert
     with pytest.raises(expected_exception):
         Sequence(sequence)
 
-@pytest.mark.parametrize("sequence, index, expected_nucleotide", [
-    ("ACGT", 0, "A"),  # ID: first_nucleotide
-    ("ACGT", 3, "T"),  # ID: last_nucleotide
-    ("ACGTN", 4, "N"),  # ID: n_nucleotide
-    ("A", 0, "A"),  # ID: single_nucleotide_access
-], ids=["first_nucleotide", "last_nucleotide", "n_nucleotide", "single_nucleotide_access"])
+
+@pytest.mark.parametrize(
+    "sequence, index, expected_nucleotide",
+    [
+        ("ACGT", 0, "A"),  # ID: first_nucleotide
+        ("ACGT", 3, "T"),  # ID: last_nucleotide
+        ("ACGTN", 4, "N"),  # ID: n_nucleotide
+        ("A", 0, "A"),  # ID: single_nucleotide_access
+    ],
+    ids=[
+        "first_nucleotide",
+        "last_nucleotide",
+        "n_nucleotide",
+        "single_nucleotide_access",
+    ],
+)
 def test_getitem(sequence, index, expected_nucleotide):
     # Arrange
     seq = Sequence(sequence)
@@ -54,12 +74,22 @@ def test_getitem(sequence, index, expected_nucleotide):
     # Act & Assert
     assert seq[index] == expected_nucleotide
 
-@pytest.mark.parametrize("sequence, slice_start, slice_stop, expected_slice", [
-    ("ACGT", 0, 2, ["A", "C"]),  # ID: slice_start_to_middle
-    ("ACGT", 2, 4, ["G", "T"]),  # ID: slice_middle_to_end
-    ("ACGTN", 1, 4, ["C", "G", "T"]),  # ID: slice_with_n
-    ("ACGT", 0, 4, ["A", "C", "G", "T"]),  # ID: slice_whole_sequence
-], ids=["slice_start_to_middle", "slice_middle_to_end", "slice_with_n", "slice_whole_sequence"])
+
+@pytest.mark.parametrize(
+    "sequence, slice_start, slice_stop, expected_slice",
+    [
+        ("ACGT", 0, 2, ["A", "C"]),  # ID: slice_start_to_middle
+        ("ACGT", 2, 4, ["G", "T"]),  # ID: slice_middle_to_end
+        ("ACGTN", 1, 4, ["C", "G", "T"]),  # ID: slice_with_n
+        ("ACGT", 0, 4, ["A", "C", "G", "T"]),  # ID: slice_whole_sequence
+    ],
+    ids=[
+        "slice_start_to_middle",
+        "slice_middle_to_end",
+        "slice_with_n",
+        "slice_whole_sequence",
+    ],
+)
 def test_getitem_slice(sequence, slice_start, slice_stop, expected_slice):
     # Arrange
     seq = Sequence(sequence)
@@ -67,12 +97,22 @@ def test_getitem_slice(sequence, slice_start, slice_stop, expected_slice):
     # Act & Assert
     assert seq[slice_start:slice_stop] == expected_slice
 
-@pytest.mark.parametrize("sequence, index", [
-    ("ACGT", 4),  # ID: index_out_of_range_positive
-    ("ACGT", -5),  # ID: index_out_of_range_negative
-    ("A", 1),  # ID: index_out_of_range_single_nucleotide
-    ("", 0),  # ID: index_out_of_range_empty_sequence
-], ids=["index_out_of_range_positive", "index_out_of_range_negative", "index_out_of_range_single_nucleotide", "index_out_of_range_empty_sequence"])
+
+@pytest.mark.parametrize(
+    "sequence, index",
+    [
+        ("ACGT", 4),  # ID: index_out_of_range_positive
+        ("ACGT", -5),  # ID: index_out_of_range_negative
+        ("A", 1),  # ID: index_out_of_range_single_nucleotide
+        ("", 0),  # ID: index_out_of_range_empty_sequence
+    ],
+    ids=[
+        "index_out_of_range_positive",
+        "index_out_of_range_negative",
+        "index_out_of_range_single_nucleotide",
+        "index_out_of_range_empty_sequence",
+    ],
+)
 def test_getitem_index_error(sequence, index):
     # Arrange
     seq = Sequence(sequence)
@@ -96,7 +136,12 @@ ERROR_CASES = [
     ({"invalid": "sequence"}, AttributeError),  # ID: invalid_sequence_dict
 ]
 
-@pytest.mark.parametrize("sequence_string, expected_nucleotides", TEST_CASES, ids=[str(case[1]) for case in TEST_CASES])
+
+@pytest.mark.parametrize(
+    "sequence_string, expected_nucleotides",
+    TEST_CASES,
+    ids=[str(case[1]) for case in TEST_CASES],
+)
 def test_sequence_iterator(sequence_string, expected_nucleotides):
 
     # Arrange
@@ -110,7 +155,12 @@ def test_sequence_iterator(sequence_string, expected_nucleotides):
     with pytest.raises(StopIteration):
         next(iterator)
 
-@pytest.mark.parametrize("invalid_sequence, expected_exception", ERROR_CASES, ids=[case[1].__name__ for case in ERROR_CASES])
+
+@pytest.mark.parametrize(
+    "invalid_sequence, expected_exception",
+    ERROR_CASES,
+    ids=[case[1].__name__ for case in ERROR_CASES],
+)
 def test_sequence_iterator_invalid_sequence(invalid_sequence, expected_exception):
 
     # Act & Assert
@@ -145,6 +195,7 @@ INDEX_TEST_CASES = [
     ("test.fasta", "test.fasta.fai"),  # ID: index_existing_index
 ]
 
+
 @pytest.fixture(scope="function")
 def fasta_file(tmp_path):
     fasta_path = tmp_path / "test.fasta"
@@ -152,13 +203,20 @@ def fasta_file(tmp_path):
         f.write(FASTA_CONTENT)
     return str(fasta_path)
 
+
 @pytest.fixture(scope="function")
 def fasta_index(fasta_file, tmp_path):
     index_path = tmp_path / "test.fasta.fai"
     pysam.faidx(str(fasta_file))
     return str(index_path)
 
-@pytest.mark.parametrize("fasta_file, faidx, contig, start, stop, expected_sequence", TEST_CASES, indirect=["fasta_file"], ids=[case[5] for case in TEST_CASES])
+
+@pytest.mark.parametrize(
+    "fasta_file, faidx, contig, start, stop, expected_sequence",
+    TEST_CASES,
+    indirect=["fasta_file"],
+    ids=[case[5] for case in TEST_CASES],
+)
 def test_fetch_valid(fasta_file, faidx, contig, start, stop, expected_sequence):
     # Arrange
     fasta = Fasta(fasta_file, faidx)
@@ -170,6 +228,7 @@ def test_fetch_valid(fasta_file, faidx, contig, start, stop, expected_sequence):
     # Assert
     assert str(sequence) == expected_sequence
 
+
 # @pytest.mark.parametrize("fasta_file, faidx, contig, start, stop, expected_exception", ERROR_CASES, indirect=["fasta_file"], ids=[case[5].__name__ for case in ERROR_CASES])
 # def test_fetch_invalid(fasta_file, faidx, contig, start, stop, expected_exception):
 #     # Arrange
@@ -179,6 +238,7 @@ def test_fetch_valid(fasta_file, faidx, contig, start, stop, expected_sequence):
 #     # Act & Assert
 #     with pytest.raises(expected_exception):
 #         fasta.fetch(coord)
+
 
 def test_repr(fasta_file):
     # Arrange

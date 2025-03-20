@@ -7,9 +7,9 @@ files for sequence retrieval.
 """
 
 
-from coordinate import Coordinate
-from sequence import Fasta
-from region import Region, RegionList
+from .coordinate import Coordinate
+from .sequence import Fasta
+from .region import Region, RegionList
 
 from typing import List, Union
 

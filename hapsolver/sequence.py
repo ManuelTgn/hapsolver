@@ -1,7 +1,7 @@
 """ """
 
-from coordinate import Coordinate
-from utils import DNA
+from .coordinate import Coordinate
+from .utils import DNA
 
 from typing import Optional, Union
 
