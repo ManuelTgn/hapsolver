@@ -1,7 +1,4 @@
-from hapsolver.bedfile import Bed
-from hapsolver.coordinate import Coordinate
-from hapsolver.sequence import Fasta
-from hapsolver.region import RegionList, Region
+from hapsolver import Bed, Coordinate, Fasta, RegionList, Region
 
 import pytest
 

@@ -1,5 +1,4 @@
-"""
-"""
+""" """
 
 from .coordinate import Coordinate
 
@@ -13,6 +12,7 @@ import os
 
 TBI = "tbi"  # tabix index suffix
 VTYPES = ["snp", "indel"]  # variant types
+
 
 class VariantRecord:
     """Represents a variant record from a VCF file.
@@ -54,7 +54,6 @@ class VariantRecord:
         altalleles = ",".join(self._alt)
         return f"{self._chrom}\t{self._position}\t{self._ref}\t{altalleles}"
 
-
     def __eq__(self, vrecord: "VariantRecord") -> bool:
         """Check if two VariantRecord objects are equal.
 
@@ -71,13 +70,21 @@ class VariantRecord:
             AttributeError: If the comparison fails due to missing attributes.
         """
         if not hasattr(vrecord, "_chrom"):
-            raise AttributeError(f"Comparison between {self.__class__.__name__} object failed")
+            raise AttributeError(
+                f"Comparison between {self.__class__.__name__} object failed"
+            )
         if not hasattr(vrecord, "_position"):
-            raise AttributeError(f"Comparison between {self.__class__.__name__} object failed")
+            raise AttributeError(
+                f"Comparison between {self.__class__.__name__} object failed"
+            )
         if not hasattr(vrecord, "_ref"):
-            raise AttributeError(f"Comparison between {self.__class__.__name__} object failed")
+            raise AttributeError(
+                f"Comparison between {self.__class__.__name__} object failed"
+            )
         if not hasattr(vrecord, "_alt"):
-            raise AttributeError(f"Comparison between {self.__class__.__name__} object failed")
+            raise AttributeError(
+                f"Comparison between {self.__class__.__name__} object failed"
+            )
         return (
             self._chrom == vrecord.contig
             and self._position == vrecord.position
@@ -106,7 +113,9 @@ class VariantRecord:
         try:
             return altalleles.split(",")
         except AttributeError as e:
-            raise AttributeError("Alternative alleles must be encoded in a string") from e
+            raise AttributeError(
+                "Alternative alleles must be encoded in a string"
+            ) from e
         except Exception as e:
             raise Exception("Unexpected error while parsing alternative alleles") from e
 
@@ -181,8 +190,9 @@ class VariantRecord:
         vrecord._samples = [self._samples[i]]
         return vrecord
 
-
-    def read_vcf_line(self, variant: List[str], samples: List[str], phased: bool) -> None:
+    def read_vcf_line(
+        self, variant: List[str], samples: List[str], phased: bool
+    ) -> None:
         """Read and parse a VCF line.
 
         Parses a line from a VCF file and populates the attributes of the
@@ -222,7 +232,6 @@ class VariantRecord:
         return [
             self._copy(i) for i, _ in enumerate(self._vtype) if self._vtype[i] == vtype
         ]
-
 
     def get_altalleles(self, vtype: str) -> List[str]:
         """Retrieve alternative alleles of a specific variant type.
@@ -279,7 +288,7 @@ class VariantRecord:
     @property
     def allelesnum(self) -> int:
         return self._allelesnum
-    
+
 
 def _assign_vtype(ref: str, alt: str) -> bool:
     """Determine the variant type.
@@ -297,6 +306,7 @@ def _assign_vtype(ref: str, alt: str) -> bool:
     """
     return VTYPES[1] if len(ref) != len(alt) else VTYPES[0]
 
+
 def _compute_id(chrom: str, pos: int, ref: str, alt: str) -> str:
     """Compute a variant ID.
 
@@ -312,9 +322,10 @@ def _compute_id(chrom: str, pos: int, ref: str, alt: str) -> str:
     Returns:
         The computed variant ID.
     """
-    # compute variant id for variants without id, or multiallelic sites 
+    # compute variant id for variants without id, or multiallelic sites
     # use IGVF consortium notation
     return f"{chrom}-{pos}-{ref}/{alt}"
+
 
 def _adjust_multiallelic(ref: str, alt: str, pos: int) -> Tuple[str, str, int]:
     """Adjust reference/alternative alleles and position for multiallelic sites.
@@ -346,6 +357,7 @@ def _adjust_multiallelic(ref: str, alt: str, pos: int) -> Tuple[str, str, int]:
         alt_new = alt[len(ref) - 1 :]  # adjust alt allele
         pos_new = pos + len(ref) - 1  # adjust variant position
     return ref_new, alt_new, pos_new
+
 
 def _genotypes_to_samples(
     genotypes: List[str], samples: List[str], allelesnum: int, phased: bool
@@ -382,7 +394,9 @@ def _genotypes_to_samples(
         except TypeError as e:
             raise TypeError(f"Split object is not of {str.__name__} type") from e
         except Exception as e:
-            raise Exception(f"An unexpected error occurred while parsing genotype {gt}") from e
+            raise Exception(
+                f"An unexpected error occurred while parsing genotype {gt}"
+            ) from e
         if gt1 not in ["0", "."]:  # left copy
             sampleshap[int(gt1) - 1][0].add(samples[i])
         if phased and gt2 not in ["0", "."]:  # right copy
@@ -400,9 +414,11 @@ class VCF:
         self._vcfidx = self._search_index(vcfidx)  # initialize vcf index
         # initialize TabixFile object with the previously computed index
         self._vcf = TabixFile(self._fname, index=self._vcfidx)
-        if len(set(self._vcf.contigs) != 1):  # assume vcf data about one contig
-            raise ValueError(f"Input VCF {fname} store variants belonging to multiple contigs")
-        self._contig = self._vcf.contigs[0] 
+        if len(set(self._vcf.contigs)) != 1:  # assume vcf data about one contig
+            raise ValueError(
+                f"Input VCF {fname} store variants belonging to multiple contigs"
+            )
+        self._contig = self._vcf.contigs[0]
         self._samples = self._vcf.header[-1].strip().split()[9:]  # recover samples
         self._phased = False  # by default treat vcf as unphased
         self._is_phased()  # check if the input vcf is phased
@@ -435,8 +451,9 @@ class VCF:
         # precomputed vcf index index must be a non empty file
         if not (os.path.isfile(vcfidx) and os.stat(vcfidx).st_size > 0):
             raise FileNotFoundError(f"Not existing or empty VCF index {vcfidx}")
+        return vcfidx
 
-    def index_vcf(self) -> None:
+    def index_vcf(self, pytest: Optional[bool] = False) -> None:
         """Create or update the Tabix index for the VCF file.
 
         Creates or updates the Tabix index (.tbi) for the associated VCF file.
@@ -446,7 +463,7 @@ class VCF:
             OSError: If an error occurs during indexing.
             RuntimeWarning: If an index already exists.
         """
-        if self._vcfidx:  # launch warning
+        if self._vcfidx and not pytest:  # launch warning
             warnings.warn("Tabix index already present, forcing update", RuntimeWarning)
         # compute tabix index if not provided during object initialization
         try:  # create index in the same folder as the input vcf
@@ -498,24 +515,29 @@ class VCF:
             vcfcontig = self._contig.replace("chr", "")
             coordcontig = coordinate.contig.replace("chr", "")
             if vcfcontig != coordcontig:
-                raise ValueError(f"Mismatching VCF and coordinate contigs ({self._contig} - {coordinate.contig})")
+                raise ValueError(
+                    f"Mismatching VCF and coordinate contigs ({self._contig} - {coordinate.contig})"
+                )
         try:  # extract variants in the input range from vcf file
             self._is_phased()  # assess whether the vcf is phased
             return [
-                _create_variant_record(
-                    v.strip().split(), self._samples, self._phased
-                )
+                _create_variant_record(v.strip().split(), self._samples, self._phased)
                 for v in self._vcf.fetch(
                     self._contig, coordinate.start, coordinate.stop
                 )
             ]
         except ValueError as e:
-            raise ValueError(f"Invalid reference or position provided ({self._contig}\t{coordinate.start}\t{coordinate.stop})") from e
+            raise ValueError(
+                f"Invalid reference or position provided ({self._contig}\t{coordinate.start}\t{coordinate.stop})"
+            ) from e
         except IndexError as e:
-            raise IndexError(f"Tried to fetch data outside the bounds of the indexed file ({self._contig}\t{coordinate.start}\t{coordinate.stop})") from e    
+            raise IndexError(
+                f"Tried to fetch data outside the bounds of the indexed file ({self._contig}\t{coordinate.start}\t{coordinate.stop})"
+            ) from e
         except Exception as e:
-            raise Exception(f"An unexpected error occurred ({self._contig}\t{coordinate.start}\t{coordinate.stop})") from e
-
+            raise Exception(
+                f"An unexpected error occurred ({self._contig}\t{coordinate.start}\t{coordinate.stop})"
+            ) from e
 
     @property
     def contig(self) -> str:
@@ -529,7 +551,7 @@ class VCF:
 def _find_tbi(vcf: str) -> bool:
     """Check if a Tabix index exists for a VCF file.
 
-    Checks if a Tabix index (.tbi) exists for the given VCF file and is a non-empty 
+    Checks if a Tabix index (.tbi) exists for the given VCF file and is a non-empty
     file.
 
     Args:
@@ -551,4 +573,3 @@ def _create_variant_record(
     vrecord = VariantRecord()  # create variant record instance
     vrecord.read_vcf_line(variant, samples, phased)  # read vcf line
     return vrecord
-

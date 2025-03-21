@@ -1,10 +1,7 @@
-from hapsolver.sequence import Sequence, SequenceIterator, Fasta
-from hapsolver.coordinate import Coordinate
+from hapsolver import Sequence, SequenceIterator, Fasta, Coordinate
 
 import pytest
 import pysam
-
-import os
 
 # ====== Sequence class test
 

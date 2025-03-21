@@ -1,4 +1,4 @@
-from hapsolver.coordinate import Coordinate
+from hapsolver import Coordinate
 
 import pytest
 
