@@ -42,6 +42,19 @@ class Sequence:
         # cast str to list for fast index access
         self._sequence_raw = list(self._sequence)
 
+    def __eq__(self, sequence: "Sequence") -> bool:
+        """Compare two Sequence objects for equality.
+
+        Compares the DNA sequences of two Sequence objects.
+
+        Args:
+            sequence: The Sequence object to compare to.
+
+        Returns:
+            True if the sequences are identical, False otherwise.
+        """
+        return self._sequence == sequence.sequence
+
     def __len__(self) -> int:
         """Return the length of the sequence.
 
