@@ -36,6 +36,20 @@ class Region:
             The length of the sequence.
         """
         return len(self._sequence)
+    
+    def __eq__(self, region_query: "Region") -> bool:
+        """Check if the current region is equal to another region.
+
+        Checks if the provided region has the same sequence and coordinates as the
+        current region.
+
+        Args:
+            region_query: The region to compare to.
+
+        Returns:
+            True if the regions are identical, False otherwise.
+        """
+        return (self._sequence == region_query.sequence) and (self._coordinates == region_query._coordinates)
 
     def __str__(self) -> str:
         """Return a string representation of the region.
@@ -220,8 +234,7 @@ class RegionList:
             raise TypeError(
                 f"Cannot extend {self.__class__.__name__} with objects of type {type(regions).__name__}"
             )
-        for r in regions:  # extend regions list
-            self._regions.extend(r)
+        self._regions.extend(regions)   # extend regions list
 
     def append(self, region: Region) -> None:
         """Append a region to the list.

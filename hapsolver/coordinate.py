@@ -40,6 +40,20 @@ class Coordinate:
         self._stop = stop  # set stop coordinate
         self._padding = padding  # set region padding length
 
+    def __eq__(self, coord_query: "Coordinate") -> bool:
+        """Check if the current coordinate is equal to another coordinate.
+
+        Checks if the provided coordinate has the same contig, start, and stop
+        as the current coordinate.
+
+        Args:
+            coord_query: The coordinate to compare to.
+
+        Returns:
+            True if the coordinates are identical, False otherwise.
+        """
+        return (self._contig == coord_query.contig) and (self._start == coord_query.start) and (self._stop == coord_query.stop)
+
     def __repr__(self) -> str:
         """Return a string representation of the Coordinate object.
 
