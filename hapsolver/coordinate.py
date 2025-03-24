@@ -52,7 +52,11 @@ class Coordinate:
         Returns:
             True if the coordinates are identical, False otherwise.
         """
-        return (self._contig == coord_query.contig) and (self._start == coord_query.start) and (self._stop == coord_query.stop)
+        return (
+            (self._contig == coord_query.contig)
+            and (self._start == coord_query.start)
+            and (self._stop == coord_query.stop)
+        )
 
     def __repr__(self) -> str:
         """Return a string representation of the Coordinate object.

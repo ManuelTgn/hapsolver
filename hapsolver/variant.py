@@ -92,6 +92,9 @@ class VariantRecord:
             and self._alt == vrecord.alt
         )
 
+    def __hash__(self) -> int:
+        return hash((self._chrom, self._position, self._ref, tuple(self._alt)))
+
     def _retrieve_alt_alleles(self, altalleles: str) -> List[str]:
         """Retrieve and parse alternative alleles from a string.
 
@@ -216,21 +219,25 @@ class VariantRecord:
             variant[9:], samples, self._allelesnum, phased
         )  # recover samples with their genotypes
 
-    def split(self, vtype: str) -> List["VariantRecord"]:
-        """Split the variant record by variant type.
+    def split(self, vtype: Optional[str] = None) -> List["VariantRecord"]:
+        """Split a multiallelic variant record by variant type.
 
-        Creates a list of new VariantRecord objects, each representing a single
-        alternative allele of the specified variant type (either "snp" or "indel").
+        Splits a multiallelic VariantRecord object into a list of VariantRecord objects,
+        each representing a single alternative allele of the specified variant type.
 
         Args:
-            vtype: The variant type to select ("snp" or "indel").
+            vtype: The variant type to select ("snp" or "indel"). If None, all
+                variant types are included.
 
         Returns:
-            A list of VariantRecord objects, each corresponding to an alternative
-            allele of the specified type.
+            A list of VariantRecord objects, one for each alternative allele matching
+            the specified variant type.
         """
+        vtypes_filter = VTYPES if vtype is None else [vtype]
         return [
-            self._copy(i) for i, _ in enumerate(self._vtype) if self._vtype[i] == vtype
+            self._copy(i)
+            for i, _ in enumerate(self._vtype)
+            if self._vtype[i] in vtypes_filter
         ]
 
     def get_altalleles(self, vtype: str) -> List[str]:
