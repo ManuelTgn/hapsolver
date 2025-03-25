@@ -91,6 +91,12 @@ class VariantRecord:
             and self._ref == vrecord.ref
             and self._alt == vrecord.alt
         )
+    
+    def __lt__(self, vrecord: "VariantRecord") -> bool:
+        return self._position < vrecord.position
+    
+    def __gt__(self, vrecord: "VariantRecord") -> bool:
+        return self._position > vrecord.position
 
     def __hash__(self) -> int:
         return hash((self._chrom, self._position, self._ref, tuple(self._alt)))

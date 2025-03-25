@@ -28,3 +28,14 @@ def adjust_position(position: int, pivot_pos: int) -> int:
         The adjusted position.
     """
     return position - pivot_pos
+
+def compute_indel_length(ref: str, alt: str) -> int:
+    """Computes the length of an indel.
+
+    Args:
+        ref: The reference sequence.
+        alt: The alternate sequence.
+    Returns:
+        The length of the indel.
+    """
+    return abs(len(ref) - len(alt))

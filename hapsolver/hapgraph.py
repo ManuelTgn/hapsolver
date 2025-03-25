@@ -128,6 +128,8 @@ class HaplotypeGraph:
         self._layers = {i: [] for i in range(self._layers_num)}
         # initialize first layer with starting nodes
         self._layers[0] = [n for n in self._nodes]
+        # store chromosome copy where the variant occurs
+        self._chromcopy = chromcopy
 
     def __repr__(self) -> str:
         """Returns a string representation of the HaplotypeGraph.
@@ -166,9 +168,10 @@ class HaplotypeGraph:
         and creating new nodes for the intersections. The process stops when no more
         intersections are found or all samples have been mapped.
         """
+        layers = self._layers_num  # initialize var storing non-empty layers
         for layer in range(self._layers_num - 1):
             for node1, node2 in list(combinations(self._layers[layer], r=2)):
-                if node1.counter == 0 or node2.counter == 0:
+                if node1.counter == 0 and node2.counter == 0:
                     continue  # all samples already mapped
                 if common_samples := node1.common_samples(node2):
                     node_int = self.add_node(
@@ -179,8 +182,9 @@ class HaplotypeGraph:
                         # record samples visited
                         n.decrease_counter(len(common_samples))
             if not self._layers[layer + 1]:  # no samples intersection found
+                layers = layer + 1
                 break
-        self._layers = {l: self._layers[l] for l in range(layer + 1)}
+        self._layers = {l: self._layers[l] for l in range(layers)}
         self._layers_num = len(self._layers)  # update number of layers in graph
 
     def retrieve_haplotypes(self) -> List[Tuple[Set[VariantRecord], Set[str]]]:
@@ -206,10 +210,8 @@ class HaplotypeGraph:
                     haplotypes.append((node.variants, unreconstructed_haps))
                     reconstructed_haps.extend(list(unreconstructed_haps))
         return haplotypes
+    
 
-    # def print(self) -> None:
-    #     for layer, nodes in self._layers.items():
-    #         sys.stdout.write(f"Layer {layer} nodes:\n\n")
-    #         for node in nodes:
-    #             sys.stdout.write(f"{node} -> [{node.edges}]\n")
-    #         sys.stdout.write("\n")
+    @property
+    def chromcopy(self) -> int:
+        return self._chromcopy
