@@ -372,6 +372,23 @@ def _adjust_multiallelic(ref: str, alt: str, pos: int) -> Tuple[str, str, int]:
     return ref_new, alt_new, pos_new
 
 
+def _parse_genotype_phased(gt_alleles: Tuple[str, str], sample: str, sampleshap: List[Tuple[Set[str], Set[str]]]) -> List[Tuple[Set[str], Set[str]]]:
+    if len(gt_alleles) != 2:
+        raise ValueError("Phased genotypes cannot have more than one allele on each copy")
+    gt1, gt2 = gt_alleles  # retrieve allele occurring on first and second copy 
+    if gt1 not in ["0", "."]:  # left copy
+        sampleshap[int(gt1) - 1][0].add(sample)
+    if gt2 not in ["0", "."]:  # right copy
+        sampleshap[int(gt2) - 1][1].add(sample)
+    return sampleshap    
+
+def _parse_genotype_unphased(gt_alleles: Tuple[str, str], sample: str, sampleshap: List[Tuple[Set[str], Set[str]]]) -> List[Tuple[Set[str], Set[str]]]:
+    for gt in gt_alleles:  # handle genotypes like 0/1/2
+        if gt not in ["0", "."]: 
+            sampleshap[int(gt) - 1][0].add(sample)
+    return sampleshap
+
+
 def _genotypes_to_samples(
     genotypes: List[str], samples: List[str], allelesnum: int, phased: bool
 ) -> Tuple[Set[str], Set[str]]:
@@ -403,19 +420,14 @@ def _genotypes_to_samples(
     gtsep = "|" if phased else "/"  # define genotype separator char
     for i, gt in enumerate(genotypes):
         try:
-            gt1, gt2 = gt.split(":")[0].split(gtsep)
+            gt_alleles = gt.split(":")[0].split(gtsep)
         except TypeError as e:
             raise TypeError(f"Split object is not of {str.__name__} type") from e
         except Exception as e:
             raise Exception(
                 f"An unexpected error occurred while parsing genotype {gt}"
             ) from e
-        if gt1 not in ["0", "."]:  # left copy
-            sampleshap[int(gt1) - 1][0].add(samples[i])
-        if phased and gt2 not in ["0", "."]:  # right copy
-            sampleshap[int(gt2) - 1][1].add(samples[i])
-        elif gt2 not in ["0", "."]:  # unphased, so use left copy
-            sampleshap[int(gt2) - 1][0].add(samples[i])
+        sampleshap = _parse_genotype_phased(gt_alleles, samples[i], sampleshap) if phased else _parse_genotype_unphased(gt_alleles, samples[i], sampleshap)
     return sampleshap
 
 

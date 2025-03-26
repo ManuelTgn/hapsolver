@@ -25,7 +25,7 @@ class Sequence:
         _sequence_bits: The encoded DNA sequence as a list of bits.
     """
 
-    def __init__(self, sequence: str) -> None:
+    def __init__(self, sequence: str, lower: Optional[bool] = False) -> None:
         """Initialize a Sequence object.
 
         Args:
@@ -38,7 +38,7 @@ class Sequence:
         if any(nt.upper() not in DNA for nt in set(sequence)):
             raise ValueError("The input string is not a DNA string")
         # force sequence nucleotides to upper case
-        self._sequence = sequence.upper()
+        self._sequence = sequence if lower else sequence.upper()
         # cast str to list for fast index access
         self._sequence_raw = list(self._sequence)
 

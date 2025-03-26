@@ -78,7 +78,8 @@ class Node:
         Returns:
             None
         """
-        self._counter -= n
+        if self._counter > 0:
+            self._counter -= n
 
     @property
     def edges(self) -> Set["Node"]:
@@ -170,10 +171,16 @@ class HaplotypeGraph:
         """
         layers = self._layers_num  # initialize var storing non-empty layers
         for layer in range(self._layers_num - 1):
+            print(f"current layer: {layer}")
+            print(f"{self._layers[layer]}")
             for node1, node2 in list(combinations(self._layers[layer], r=2)):
-                if node1.counter == 0 and node2.counter == 0:
+                # if (node1.counter == 0 and node2.counter == 0) or (node1.variants):
+                if _skip_node_merge(node1, node2):
+                    print(f"skip - {node1} | {node2}")
                     continue  # all samples already mapped
                 if common_samples := node1.common_samples(node2):
+                    print(f"accessed - {node1} | {node2}")
+                    print(f"{common_samples}")
                     node_int = self.add_node(
                         node1.variants.union(node2.variants), common_samples, layer + 1
                     )
@@ -181,6 +188,7 @@ class HaplotypeGraph:
                         n.link(node_int)  # connect parents to child node
                         # record samples visited
                         n.decrease_counter(len(common_samples))
+            print()
             if not self._layers[layer + 1]:  # no samples intersection found
                 layers = layer + 1
                 break
@@ -199,19 +207,43 @@ class HaplotypeGraph:
             A list of tuples, where each tuple contains a set of variants and a set
             of samples representing a haplotype.
         """
-        haplotypes = []
-        reconstructed_haps = []
+        haplotypes = []  # list of encoded
+        reconstructed_haps = set()  # set of reconstructed haplotypes
         # traverse the haplotype graph by layer (go from bottom)
         for layer in list(range(self._layers_num))[::-1]:
+            unreconstructed_haps = []
             for node in self._layers[layer]:
-                if unreconstructed_haps := node.samples.difference(
-                    set(reconstructed_haps)
-                ):
-                    haplotypes.append((node.variants, unreconstructed_haps))
-                    reconstructed_haps.extend(list(unreconstructed_haps))
+                if (unreconstructed_haps_ := node.samples.difference(reconstructed_haps)):
+                    haplotypes.append((node.variants, unreconstructed_haps_))
+                    unreconstructed_haps += unreconstructed_haps_
+            for hap in unreconstructed_haps:
+                reconstructed_haps.add(hap)
         return haplotypes
     
 
     @property
     def chromcopy(self) -> int:
         return self._chromcopy
+    
+
+def _skip_node_merge(node1: Node, node2: Node) -> bool:
+    if node1.counter == 0 and node2.counter == 0:
+        return True
+    positions_node1 = {v.position for v in node1.variants}
+    positions_node2 = {v.position for v in node2.variants}
+    positions_common = positions_node1.intersection(positions_node2)
+    if not positions_common:
+        return False
+    variants_node1 = {v for v in node1.variants if v.position in positions_common}
+    variants_node2 = {v for v in node2.variants if v.position in positions_common}
+    print("listing:")
+    print(variants_node1)
+    print(variants_node2)
+    return any(
+        vnode1.position == vnode2.position and vnode1.alt[0] != vnode2.alt[0]
+        for vnode1, vnode2 in list(
+            combinations(list(variants_node1) + list(variants_node2), r=2)
+        )
+    )
+    
+    # return bool(positions_node1.intersection(positions_node2))

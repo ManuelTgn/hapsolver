@@ -9,6 +9,7 @@ from .utils import adjust_position, compute_indel_length, flatten_list
 from typing import Set, List
 
 import pandas as pd
+import numpy as np
 
 CNAMES = ["haplotype", "variants", "samples"]
 
@@ -18,6 +19,9 @@ class Haplotype(Region):
         super().__init__(sequence, coord)
         self._size = len(self.sequence)
         self._posmap = {i:i for i in range(len(self.sequence))}  # positions map
+        self._maxpos = self._size - 1
+        self._variants = "NA"
+        self._samples = "REF"
         self._samples_suffix = "0/1"  # store the suffix to append to samples 
         if phased:  # if phased, record on which copy the haplotype occurs
             self._samples_suffix = "1|0" if chromcopy == 0 else "0|1"
@@ -36,20 +40,24 @@ class Haplotype(Region):
 
 
     def _update_sequence(self, start: int, stop: int, alt: str) -> None:
-        self._sequence._sequence_raw = self._sequence._sequence_raw[:start] + list(alt) + self._sequence._sequence_raw[stop:]
+        self._sequence._sequence_raw = self._sequence._sequence_raw[:start] + list(alt.lower()) + self._sequence._sequence_raw[stop:]
     
     def _modify_position(self, position: int, ref: str, alt: str, vtype: str) -> None:
         # compute the variant position within the region sequence
         posrel = adjust_position(position - 1, self._coordinates._start)
-        print(f"posrel: {posrel} {len(self._sequence._sequence_raw)}")
-        print(self._sequence._sequence_raw[posrel:])
         offset = compute_indel_length(ref, alt) if vtype == VTYPES[1] and len(ref) > len(alt) else 0  # compute position offset, if variant is deletion
         # check consistency between reference alleles in sequence and vcf
-        refnt = self.substring(posrel, posrel + offset + 1)  # retrieve ref nt
-        if refnt != ref:
+        if (posrel_stop := posrel + offset + 1) > self._maxpos:
+            # avoid out of bounds if indel occurs at boundaries
+            posrel_stop = self._maxpos
+        idx = posrel_stop - posrel
+        sequpdate_offset = len(ref) - len(ref[:idx])
+        print(f"{posrel} {posrel_stop} {idx}")
+        refnt = self.substring(posrel, posrel_stop)  # retrieve ref nt
+        if refnt[:idx] != ref[:idx]:
             raise ValueError(f"Mismatching reference alleles in VCF and reference sequence ({refnt} - {ref})")
         # retrieve start and stop positions in relative string
-        start, stop = self._posmap[posrel], self._posmap[posrel + offset + 1]
+        start, stop = self._posmap[posrel], self._posmap[posrel_stop] + sequpdate_offset
         if any(isinstance(p, list) for p in [start, stop]):
             raise ValueError(f"Forbidden haplotype (position: {position}). Are you modifying a position where an indels occur?")
         self._update_sequence(start, stop, alt)  # update sequence 
@@ -61,11 +69,12 @@ class Haplotype(Region):
     def add_variants(self, variants: Set[VariantRecord], samples: Set[str]) -> None:
         # sort variants to first add snps, then indels to haplotype
         variants = _sort_variants(variants)
+        print()
         # modify region sequence to reflect input haplotype
         for variant in variants:  # insert variant in reference sequence
             self._modify_position(variant.position, variant.ref, variant.alt[0], variant.vtype[0])
         # update with current haplotype   
-        self._sequence = Sequence("".join(self._sequence._sequence_raw))  
+        self._sequence = Sequence("".join(self._sequence._sequence_raw), lower=True)  
         # add variants and samples data associated to current haplotype
         self._variants = ",".join(sorted(flatten_list([v.id for v in variants])))
         self._samples = ",".join(sorted([f"{s}:{self._samples_suffix}" for s in samples]))
