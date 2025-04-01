@@ -257,4 +257,4 @@ def _parse_bed_line(bedline: str, linenum: int, padding: int) -> Coordinate:
             f"Stop < start coordinate ({stop} < {start}) at line {linenum}"
         )
     # if required, pad the input region sequence up and downstream
-    return Coordinate(chrom, start - padding, stop + padding, padding)
+    return Coordinate(chrom, start, stop, padding)

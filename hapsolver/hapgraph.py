@@ -24,7 +24,7 @@ class Node:
         """
         self._variants = variants  # set of variants pointed by current node
         self._samples = samples  # set of samples carrying the pointed variants
-        self._counter = len(samples)  # count samples carrying the allele
+        self._visited = [False] * len(samples)  # track how many samples have been visited
         self._edges = set()  # pointer to children nodes
 
     def __repr__(self) -> str:
@@ -68,18 +68,9 @@ class Node:
         """
         return self._samples.intersection(node_query.samples)
 
-    def decrease_counter(self, n: int) -> None:
-        """Decreases the sample counter by a given amount.
-
-        Subtracts the provided value from the current sample counter.
-
-        Args:
-            n: The amount to decrease the counter by.
-        Returns:
-            None
-        """
-        if self._counter > 0:
-            self._counter -= n
+    def mark_sample(self, n: int) -> None:
+        self._visited = ([True] * n) + ([False] * (len(self._samples) - n))
+        assert len(self._visited) == len(self._samples)
 
     @property
     def edges(self) -> Set["Node"]:
@@ -94,8 +85,8 @@ class Node:
         return self._samples
 
     @property
-    def counter(self) -> int:
-        return self._counter
+    def visited(self) -> List[bool]:
+        return self._visited
 
 
 class HaplotypeGraph:
@@ -127,6 +118,7 @@ class HaplotypeGraph:
         self._layers_num = len(variants)  # number of maximum layers in the graph
         # initialize graph layers
         self._layers = {i: [] for i in range(self._layers_num)}
+        self._layers_variants = {i: set() for i in range(self._layers_num)}
         # initialize first layer with starting nodes
         self._layers[0] = [n for n in self._nodes]
         # store chromosome copy where the variant occurs
@@ -171,24 +163,23 @@ class HaplotypeGraph:
         """
         layers = self._layers_num  # initialize var storing non-empty layers
         for layer in range(self._layers_num - 1):
-            print(f"current layer: {layer}")
-            print(f"{self._layers[layer]}")
             for node1, node2 in list(combinations(self._layers[layer], r=2)):
                 # if (node1.counter == 0 and node2.counter == 0) or (node1.variants):
                 if _skip_node_merge(node1, node2):
-                    print(f"skip - {node1} | {node2}")
                     continue  # all samples already mapped
                 if common_samples := node1.common_samples(node2):
-                    print(f"accessed - {node1} | {node2}")
-                    print(f"{common_samples}")
-                    node_int = self.add_node(
-                        node1.variants.union(node2.variants), common_samples, layer + 1
-                    )
-                    for n in [node1, node2]:  # update graph structure
-                        n.link(node_int)  # connect parents to child node
-                        # record samples visited
-                        n.decrease_counter(len(common_samples))
-            print()
+                    common_variants = node1.variants.union(node2.variants)
+                    common_variants_str = "".join(sorted([v.id[0] for v in common_variants]))
+                    if common_variants_str not in self._layers_variants[layer + 1]:
+                        self._layers_variants[layer + 1].add(common_variants_str)
+
+                        node_int = self.add_node(
+                            node1.variants.union(node2.variants), common_samples, layer + 1
+                        )
+                        for n in [node1, node2]:  # update graph structure
+                            n.link(node_int)  # connect parents to child node
+                            # record samples visited
+                            n.mark_sample(len(common_samples))
             if not self._layers[layer + 1]:  # no samples intersection found
                 layers = layer + 1
                 break
@@ -227,7 +218,7 @@ class HaplotypeGraph:
     
 
 def _skip_node_merge(node1: Node, node2: Node) -> bool:
-    if node1.counter == 0 and node2.counter == 0:
+    if all(node1.visited) and all(node2.visited):
         return True
     positions_node1 = {v.position for v in node1.variants}
     positions_node2 = {v.position for v in node2.variants}
@@ -236,9 +227,6 @@ def _skip_node_merge(node1: Node, node2: Node) -> bool:
         return False
     variants_node1 = {v for v in node1.variants if v.position in positions_common}
     variants_node2 = {v for v in node2.variants if v.position in positions_common}
-    print("listing:")
-    print(variants_node1)
-    print(variants_node2)
     return any(
         vnode1.position == vnode2.position and vnode1.alt[0] != vnode2.alt[0]
         for vnode1, vnode2 in list(
@@ -246,4 +234,3 @@ def _skip_node_merge(node1: Node, node2: Node) -> bool:
         )
     )
     
-    # return bool(positions_node1.intersection(positions_node2))

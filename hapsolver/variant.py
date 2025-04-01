@@ -93,12 +93,45 @@ class VariantRecord:
         )
     
     def __lt__(self, vrecord: "VariantRecord") -> bool:
+        """Compare two VariantRecord objects based on position.
+
+        Compares the current VariantRecord object with another VariantRecord object
+        based on their positions.
+
+        Args:
+            vrecord: The other VariantRecord object to compare to.
+
+        Returns:
+            True if the current object's position is less than the other object's
+            position, False otherwise.
+        """
         return self._position < vrecord.position
     
     def __gt__(self, vrecord: "VariantRecord") -> bool:
+        """Compare two VariantRecord objects based on position.
+
+        Compares the current VariantRecord object with another VariantRecord object
+        based on their positions.
+
+        Args:
+            vrecord: The other VariantRecord object to compare to.
+
+        Returns:
+            True if the current object's position is greater than the other object's
+            position, False otherwise.
+        """
         return self._position > vrecord.position
 
     def __hash__(self) -> int:
+        """Return a hash value for the variant record.
+
+        Returns a hash value for the VariantRecord object, based on its chromosome,
+        position, reference allele, and alternative alleles. This allows
+        VariantRecord objects to be used as keys in dictionaries or sets.
+
+        Returns:
+            The hash value of the variant record.
+        """
         return hash((self._chrom, self._position, self._ref, tuple(self._alt)))
 
     def _retrieve_alt_alleles(self, altalleles: str) -> List[str]:

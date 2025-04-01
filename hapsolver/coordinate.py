@@ -37,7 +37,9 @@ class Coordinate:
             raise ValueError("Stop < start coordinate")
         self._contig = contig  # set contig name
         self._start = start  # set start coordinate
+        self._startp = max(0, start - padding)  # set start coordinate with padding
         self._stop = stop  # set stop coordinate
+        self._stopp = stop + padding  # set stop coordinate with padding
         self._padding = padding  # set region padding length
 
     def __eq__(self, coord_query: "Coordinate") -> bool:
@@ -81,9 +83,7 @@ class Coordinate:
             A string representation of the Coordinate object.
         """
         # retrieve original start and stop
-        start = self._start + self._padding
-        stop = self._stop - self._padding
-        return f"{self._contig}:{start}-{stop}"
+        return f"{self._contig}:{self._start}-{self._stop}"
 
     @property
     def contig(self) -> str:
@@ -91,8 +91,8 @@ class Coordinate:
 
     @property
     def start(self) -> int:
-        return self._start
+        return self._startp
 
     @property
     def stop(self) -> int:
-        return self._stop
+        return self._stopp

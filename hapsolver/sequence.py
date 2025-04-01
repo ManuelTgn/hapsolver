@@ -278,6 +278,10 @@ class Fasta:
             raise ValueError(
                 f"Sequence extraction failed for coordinates {coord.contig}:{coord.start}-{coord.stop}"
             ) from e
+    
+    @property
+    def fname(self) -> str:
+        return self._fname
 
 
 def _find_fai(fastafile: str) -> bool:

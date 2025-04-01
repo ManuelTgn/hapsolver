@@ -52,6 +52,9 @@ class Region:
         return (self._sequence == region_query.sequence) and (
             self._coordinates == region_query._coordinates
         )
+    
+    def __hash__(self) -> int:
+        return hash((self._sequence.sequence, self._coordinates.contig, self._coordinates.start, self._coordinates.stop))
 
     def __str__(self) -> str:
         """Return a string representation of the region.
@@ -74,6 +77,20 @@ class Region:
             The string representation of the region.
         """
         return f"<{self.__class__.__name__} object; region={str(self._coordinates)}>"
+
+    def __getitem__(self, idx: Union[int, slice]) -> str:
+        """Return the nucleotide at the given index or slice.
+
+        Returns the nucleotide(s) at the specified index or slice in the region's
+        sequence.
+
+        Args:
+            idx: The index or slice to retrieve.
+
+        Returns:
+            The nucleotide or a slice of nucleotides.
+        """
+        return self._sequence[idx]
 
     @final
     def contain(self, region_query: "Region") -> bool:
@@ -178,6 +195,17 @@ class RegionList:
             The string representation of the region list.
         """
         return f"<{self.__class__.__name__} object; regions={len(self)}>"
+
+    def __str__(self) -> str:
+        """Return a string representation of the region list.
+
+        Returns a string representation of the RegionList object, including the
+        FASTA-formatted string representation of each region in the list.
+
+        Returns:
+            The string representation of the region list.
+        """
+        return "\n".join(str(region.coordinates) for region in self)
 
     def __len__(self) -> int:
         """Return the number of regions in the list.
