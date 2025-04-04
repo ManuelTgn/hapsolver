@@ -21,6 +21,7 @@ class Haplotype(Region):
         self._size = len(self.sequence)
         self._posmap = {i: [i] for i in range(len(self.sequence))}  # positions map
         self._maxpos = self._size - 1
+        self._reverse_posmap()  # initialize reverse position map
         self._variants = "NA"
         self._samples = "REF"
         self._samples_suffix = "0/1"  # store the suffix to append to samples 

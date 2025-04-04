@@ -70,6 +70,7 @@ if __name__ == "__main__":
     haps_lst = [Haplotype(Sequence(regions[0].sequence.sequence), regions[0].coordinates, vcf.phased, hg0.chromcopy)]
     for h in haps:
         hap = Haplotype(Sequence(regions[0].sequence.sequence), regions[0].coordinates, vcf.phased, hg0.chromcopy)
+        print(h[1])
         hap.add_variants(h[0], h[1])
         haps_lst.append(hap)
     # print(haplotypes_table(haps_lst))
