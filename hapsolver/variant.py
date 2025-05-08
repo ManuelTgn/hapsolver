@@ -505,7 +505,8 @@ class VCF:
             # index not found -> compute it de novo and store it in the same folder
             # as the input vcf
             sys.stdout.write(f"Tabix index not found for {self._fname}\n")
-            return ""
+            tabix_index(self._fname, preset="vcf", force=True)
+            return f"{self._fname}.{TBI}"
         # precomputed vcf index index must be a non empty file
         if not (os.path.isfile(vcfidx) and os.stat(vcfidx).st_size > 0):
             raise FileNotFoundError(f"Not existing or empty VCF index {vcfidx}")
@@ -529,7 +530,7 @@ class VCF:
         except OSError as e:
             raise OSError(f"An error occurred while indexing {self._fname}") from e
         assert _find_tbi(self._fname)
-        self._faidx = f"{self._fname}.{TBI}"
+        self._vcfidx = f"{self._fname}.{TBI}"
 
     def _is_phased(self) -> None:
         """Check if the VCF file is phased.
